@@ -47,7 +47,7 @@ public class Spider implements Runnable {
 	
 	public Spider(GeccoEngine engine) {
 		this.engine = engine;
-		this.spiderScheduler = new UniqueSpiderScheduler();
+		this.spiderScheduler = engine.getScheduler();
 		this.pause = false;
 		this.stop = false;
 	}
