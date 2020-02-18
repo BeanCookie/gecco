@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.geccocrawler.gecco.annotation.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,11 +16,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 
-import com.geccocrawler.gecco.annotation.Attr;
-import com.geccocrawler.gecco.annotation.Href;
-import com.geccocrawler.gecco.annotation.Html;
-import com.geccocrawler.gecco.annotation.Image;
-import com.geccocrawler.gecco.annotation.Text;
 import com.geccocrawler.gecco.request.HttpRequest;
 import com.geccocrawler.gecco.response.HttpResponse;
 import com.geccocrawler.gecco.spider.SpiderBean;
@@ -64,11 +60,14 @@ public class HtmlParser {
 		} else if (field.isAnnotationPresent(Image.class)) {// @Image
 			Image image = field.getAnnotation(Image.class);
 			String imageSrc = $image(selector, image.value());
-			/*String localPath = DownloadImage.download(image.download(), imageSrc);
-			if (StringUtils.isNotEmpty(localPath)) {
-				return localPath;
-			}*/
 			return imageSrc;
+		} else if (field.isAnnotationPresent(ImageGroup.class)) {// @ImageGroup
+			String imageGroupValue = $imageGroup(selector);
+			return imageGroupValue;
+		} else if (field.isAnnotationPresent(Video.class)) {
+			Video video = field.getAnnotation(Video.class);
+			String videoSrc = $image(selector, video.value());
+			return videoSrc;
 		} else if (field.isAnnotationPresent(Href.class)) {// @Href
 			Href href = field.getAnnotation(Href.class);
 			String url = $href(selector, href.value());
@@ -95,11 +94,14 @@ public class HtmlParser {
 			} else if (field.isAnnotationPresent(Image.class)) {// @Image
 				Image image = field.getAnnotation(Image.class);
 				String imageSrc = $image(el, image.value());
-				/*String localPath = DownloadImage.download(image.download(), imageSrc);
-				if (StringUtils.isNotEmpty(localPath)) {
-					list.add(localPath);
-				}*/
 				list.add(imageSrc);
+			} else if (field.isAnnotationPresent(ImageGroup.class)) {// @ImageGroup
+				String imageGroupValue = $imageGroup(selector);
+				list.add(imageGroupValue);
+			} else if (field.isAnnotationPresent(Video.class)) {
+				Video video = field.getAnnotation(Video.class);
+				String videoSrc = $image(el, video.value());
+				list.add(videoSrc);
 			} else if (field.isAnnotationPresent(Href.class)) {// @Href
 				Href href = field.getAnnotation(Href.class);
 				String url = $href(el, href.value());
@@ -275,6 +277,24 @@ public class HtmlParser {
 
 	public String $image(String selector, String... attrs) {
 		return $image($element(selector), attrs);
+	}
+
+	public String $imageGroup(Element element) {
+		if (element == null) {
+			return null;
+		}
+		String text = element.text();
+		// 替换掉空格信息
+		return StringUtils.replace(text, "\u00A0", "");
+	}
+
+
+	public String $imageGroup(String selector) {
+		Element element = $element(selector);
+		if (element != null) {
+			return $imageGroup(element);
+		}
+		return null;
 	}
 
 	public void setLogClass(Class<? extends SpiderBean> spiderBeanClass) {

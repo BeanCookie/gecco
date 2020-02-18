@@ -9,19 +9,14 @@ import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Stream;
 
 import javax.net.ssl.SSLContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.NameValuePair;
+import org.apache.http.*;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -173,6 +168,8 @@ public class HttpClientDownloader extends AbstractDownloader {
 				cookieContext.getCookieStore().addCookie(cookie);
 			}
 			org.apache.http.HttpResponse response = httpClient.execute(reqObj, cookieContext);
+
+
 			int status = response.getStatusLine().getStatusCode();
 			HttpResponse resp = new HttpResponse();
 			resp.setStatus(status);
@@ -189,10 +186,17 @@ public class HttpClientDownloader extends AbstractDownloader {
 					contentType = contentTypeHeader.getValue();
 				}
 				resp.setContentType(contentType);
-				if(!isImage(contentType)) { 
-					String charset = request.isForceUseCharset() ? request.getCharset():getCharset(request.getCharset(), contentType);
+				if(!isImage(contentType)) {
+					String charset;
+
+					Header header = response.getEntity().getContentType();
+					Optional<HeaderElement> charsetElement = Arrays.stream(header.getElements()).filter(element -> element.getName().toLowerCase().equals("charset")).findFirst();
+					if (charsetElement.isPresent()) {
+						charset = charsetElement.get().getValue();
+					} else {
+						charset = "GBK";
+					}
 					resp.setCharset(charset);
-					//String content = EntityUtils.toString(responseEntity, charset);
 					String content = getContent(raw, responseEntity.getContentLength(), charset);
 					resp.setContent(content);
 				}

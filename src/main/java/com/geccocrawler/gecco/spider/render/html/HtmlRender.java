@@ -21,14 +21,14 @@ public class HtmlRender extends AbstractRender {
 	
 	private JSVarFieldRender jsVarFieldRender;
 	
-	private ImageFieldRender imageFieldRender;
+	private UrlSourceFieldRender imageFieldRender;
 	
 	public HtmlRender() {
 		super();
 		this.htmlFieldRender = new HtmlFieldRender();
 		this.ajaxFieldRender = new AjaxFieldRender();
 		this.jsVarFieldRender = new JSVarFieldRender();
-		this.imageFieldRender = new ImageFieldRender();
+		this.imageFieldRender = new UrlSourceFieldRender();
 	}
 
 	@Override
